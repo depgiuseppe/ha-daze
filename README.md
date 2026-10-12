@@ -1,211 +1,210 @@
-Home Assistant custom integration for Daze EV charging products (Dazebox)
-=========================================================================
+Integrazione personalizzata per Home Assistant per i prodotti di ricarica Daze (Dazebox)
+=======================================================================================
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Home Assistant custom integration that exposes sensor data from a [Daze](https://www.dazeservice.com/) EV wallbox charger,
-read from the same backend used by the official [webportal.dazeservice.com](https://webportal.dazeservice.com/) web app.
+Integrazione personalizzata per Home Assistant che espone i dati dei sensori di una wallbox [Daze](https://www.dazeservice.com/),
+letti dallo stesso backend usato dall'app web ufficiale [webportal.dazeservice.com](https://webportal.dazeservice.com/).
 
-> **Fork of [rdndnl/ha-daze](https://github.com/rdndnl/ha-daze)** that adds sign-in for **accounts that log in with
-> Google** (and therefore have no password). Email/password accounts keep working exactly as before.
-> Based on upstream v0.3.1.
+> **Fork di [rdndnl/ha-daze](https://github.com/rdndnl/ha-daze)** che aggiunge l'accesso per gli **account che entrano
+> con Google** (e quindi non hanno una password). Gli account con email e password continuano a funzionare come prima.
+> Basato sulla v0.3.1 dell'originale.
 
-> **Unofficial project.** This integration is not affiliated with, endorsed by, or supported by Daze.
-> It was built by reverse-engineering the public web portal's network traffic, since Daze does not publish
-> a public API. It may break without notice if Daze changes their backend.
+> **Progetto non ufficiale.** Questa integrazione non è affiliata a Daze, né approvata o supportata da Daze.
+> È stata realizzata analizzando il traffico di rete del portale web pubblico, poiché Daze non pubblica
+> un'API. Può smettere di funzionare senza preavviso se Daze cambia il proprio backend.
 
-## What this fork adds
+## Cosa aggiunge questo fork
 
-The upstream integration signs in with an email and a password. If you registered with the
-"Sign in with Google" button there is no password, so that flow cannot work. This fork adds a second way
-to set up the integration: you paste the **Cognito refresh token** that the web portal stores in your
-browser after a Google login, and the integration exchanges it for fresh access tokens on its own
-(`REFRESH_TOKEN_AUTH`, the same mechanism it already used to renew sessions).
+L'integrazione originale accede con email e password. Se ti sei registrato con il pulsante
+"Accedi con Google" non esiste nessuna password, quindi quel metodo non può funzionare. Questo fork aggiunge un secondo
+modo per configurare l'integrazione: incolli il **refresh token di Cognito** che il portale web salva nel browser
+dopo un accesso con Google, e l'integrazione lo scambia da sola con nuovi token di accesso
+(`REFRESH_TOKEN_AUTH`, lo stesso meccanismo che già usava per rinnovare le sessioni).
 
-- New setup menu: *Email and password* or *Google account (refresh token)*.
-- The account email is read from the ID token, so you do not have to type it.
-- If the stored token expires or is revoked, Home Assistant starts the normal re-authentication flow and
-  asks for a new one.
-- Everything else (sensors, buttons, polling) is unchanged from upstream.
+- Nuovo menu di configurazione: *Email e password* oppure *Account Google (refresh token)*.
+- L'email dell'account viene letta dall'ID token, quindi non devi scriverla.
+- Se il token salvato scade o viene revocato, Home Assistant avvia la normale procedura di riautenticazione e
+  te ne chiede uno nuovo.
+- Tutto il resto (sensori, pulsanti, polling) è invariato rispetto all'originale.
 
-> **Status: experimental.** The Google sign-in path is new and has had much less real-world testing than
-> the email/password path. Please open an issue if something does not work.
+> **Stato: sperimentale.** Il percorso di accesso con Google è nuovo e ha avuto molti meno test nel mondo reale
+> rispetto a quello con email e password. Se qualcosa non funziona, apri una issue.
 
-## Features
+## Funzionalità
 
-Current release contains **read-only sensors**, no charge control (start/stop, eco mode) - that may come in a future release.
+La versione attuale contiene **solo sensori in sola lettura**, nessun controllo della ricarica (avvio/arresto, modalità eco): potrebbe arrivare in una versione futura.
 
-Per charging socket:
+Per ogni presa di ricarica:
 
-- Power (W) and current session energy (kWh)
-- Charging current and AC voltage per phase (L1/L2/L3, when the installation is three-phase)
-- Board and case temperature
-- Fan status
-- Status, EVSE state, and system error, decoded to human-readable values
+- Potenza (W) ed energia della sessione in corso (kWh)
+- Corrente di ricarica e tensione AC per fase (L1/L2/L3, se l'impianto è trifase)
+- Temperatura della scheda e dell'involucro
+- Stato della ventola
+- Stato, stato EVSE ed errore di sistema, decodificati in valori leggibili
 
-Per wallbox (diagnostic):
+Per ogni wallbox (diagnostica):
 
-- Wi-Fi SSID, software/firmware version
-- Grid current per phase
+- SSID Wi-Fi, versione software/firmware
+- Corrente di rete per fase
 
-Per site ("network" in Daze's terminology):
+Per ogni sito ("network" nella terminologia di Daze):
 
-- Energy tariff and currency
+- Tariffa energetica e valuta
 
-## Requirements
+## Requisiti
 
-- Home Assistant 2024.1.0 or newer
-- A Daze account, either:
-  - the email/password you use with the mobile App or at [webportal.dazeservice.com](https://webportal.dazeservice.com/), or
-  - an account that signs in with Google (see [Google accounts](#google-accounts))
+- Home Assistant 2024.1.0 o successivo
+- Un account Daze, a scelta tra:
+  - l'email e la password che usi con l'app mobile o su [webportal.dazeservice.com](https://webportal.dazeservice.com/), oppure
+  - un account che accede con Google (vedi [Account Google](#account-google))
 
-## Installation
+## Installazione
 
-### Via HACS (custom repository)
+### Tramite HACS (repository personalizzato)
 
-This integration is not in the default HACS store, so it has to be added as a custom repository.
+Questa integrazione non è nello store predefinito di HACS, quindi va aggiunta come repository personalizzato.
 
-The quickest way is this button, which opens the repository directly in your own Home Assistant's HACS:
+Il modo più rapido è questo pulsante, che apre il repository direttamente nell'HACS della tua istanza di Home Assistant:
 
-<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=depgiuseppe&amp;repository=ha-daze&amp;category=Integration" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store."></a>
+<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=depgiuseppe&amp;repository=ha-daze&amp;category=Integration" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Apri la tua istanza di Home Assistant e apri un repository nell'Home Assistant Community Store."></a>
 
-Then click **Download**, and restart Home Assistant.
+Poi premi **Scarica** e riavvia Home Assistant.
 
-Manually, instead:
+In alternativa, a mano:
 
-1. HACS → the `⋮` menu (top right) → **Custom repositories**
-2. Repository: `https://github.com/depgiuseppe/ha-daze`, Category: **Integration**
-3. Find "Daze" in HACS and install it
-4. Restart Home Assistant
+1. HACS → menu `⋮` (in alto a destra) → **Repository personalizzati**
+2. Repository: `https://github.com/depgiuseppe/ha-daze`, Categoria: **Integrazione**
+3. Trova "Daze" in HACS e installalo
+4. Riavvia Home Assistant
 
-> This fork uses the same integration domain (`daze`) as upstream. If you previously installed
-> `rdndnl/ha-daze`, remove it from HACS (and remove it from the custom repositories list) before installing
-> this one, then restart Home Assistant.
+> Questo fork usa lo stesso dominio di integrazione (`daze`) dell'originale. Se avevi installato in precedenza
+> `rdndnl/ha-daze`, rimuovilo da HACS (e toglilo dall'elenco dei repository personalizzati) prima di installare
+> questo, poi riavvia Home Assistant.
 
-### Manual
+### Manuale
 
-Copy `custom_components/daze` into your Home Assistant `config/custom_components/` directory,
-then restart Home Assistant.
+Copia `custom_components/daze` nella cartella `config/custom_components/` di Home Assistant,
+poi riavvia Home Assistant.
 
-## Configuration
+## Configurazione
 
-Settings → Devices & Services → **Add Integration** → search for **Daze**, then choose how you sign in.
+Impostazioni → Dispositivi e servizi → **Aggiungi integrazione** → cerca **Daze**, poi scegli come accedi.
 
-### Email and password
+### Email e password
 
-Choose **Email and password** and enter your Daze account email and password.
+Scegli **Email e password** e inserisci email e password del tuo account Daze.
 
-### Google accounts
+### Account Google
 
-Choose **Google account (refresh token)** and paste your refresh token. To get it:
+Scegli **Account Google (refresh token)** e incolla il tuo refresh token. Per ottenerlo:
 
-1. Open a **private/incognito window** and go to [webportal.dazeservice.com](https://webportal.dazeservice.com/).
-2. Sign in with Google.
-3. Open the browser developer tools (F12) → **Application** → **Local storage** →
-   `https://webportal.dazeservice.com`.
-4. Copy the value of the key that ends with `.refreshToken`
-   (it looks like `CognitoIdentityServiceProvider.<client id>.Google_<number>.refreshToken`).
-5. **Close the window without clicking "Log out".** Logging out revokes the token and the integration
-   would stop working.
+1. Apri una **finestra privata/in incognito** e vai su [webportal.dazeservice.com](https://webportal.dazeservice.com/).
+2. Accedi con Google.
+3. Apri gli strumenti per sviluppatori del browser (F12) → **Application** (o **Applicazione**, se sono in italiano) →
+   **Local storage** (**Archiviazione locale**) → `https://webportal.dazeservice.com`.
+4. Copia il valore della chiave che termina con `.refreshToken`
+   (ha una forma simile a `CognitoIdentityServiceProvider.<client id>.Google_<numero>.refreshToken`).
+5. **Chiudi la finestra senza premere "Esci".** Il logout revoca il token e l'integrazione
+   smetterebbe di funzionare.
 
-Notes:
+Note:
 
-- Treat the refresh token like a password. Do not paste it in issues, chats or screenshots.
-- How long a refresh token stays valid is decided by Daze. When it expires Home Assistant will ask you to
-  re-authenticate; repeat the steps above and paste a new one.
-- Using a private window gives the integration its own session, separate from the one in your everyday browser.
+- Tratta il refresh token come una password. Non incollarlo in issue, chat o screenshot.
+- Per quanto tempo un refresh token resti valido lo decide Daze. Quando scade, Home Assistant ti chiederà di
+  riautenticarti: ripeti i passaggi qui sopra e incolla un token nuovo.
+- Usare una finestra privata dà all'integrazione una sessione tutta sua, separata da quella del tuo browser di tutti i giorni.
 
-### Options
+### Opzioni
 
-Polling interval (default 60s) can be adjusted afterwards from the integration's **Configure** options.
+L'intervallo di aggiornamento (predefinito 60 s) si può modificare in seguito dalle opzioni **Configura** dell'integrazione.
 
-## Limitations
+## Limitazioni
 
-- No charge start/stop or eco mode control yet (planned for a later release).
-- `status`/`evse_state`/`system_error` labels were cross-referenced against the official web app's
-  source and cover every value defined there, but only a handful have actually been observed live
-  (mostly `standby`/`none`). If you see a sensor fall back to `unknown`, please open an issue with
-  the raw value.
-- Email/password accounts authenticate against the same AWS Cognito app client the web portal uses, via direct
-  `USER_PASSWORD_AUTH` (no browser/webview involved). If Daze disables that auth flow this integration will need rework.
-- Google accounts cannot be signed in automatically: Cognito only accepts the redirect addresses registered for the
-  web portal, so the refresh token has to be copied from the browser by hand and renewed when it expires.
+- Non è ancora possibile avviare/fermare la ricarica né gestire la modalità eco (previsto in una versione futura).
+- Le etichette di `status`/`evse_state`/`system_error` sono state confrontate con il sorgente dell'app web ufficiale
+  e coprono tutti i valori che vi sono definiti, ma ne sono stati osservati dal vivo solo pochi
+  (soprattutto `standby`/`none`). Se un sensore passa a `unknown`, apri una issue
+  indicando il valore grezzo.
+- Gli account con email e password si autenticano sullo stesso client applicativo AWS Cognito del portale web, con
+  `USER_PASSWORD_AUTH` diretto (senza browser/webview). Se Daze disattivasse questo flusso, l'integrazione dovrebbe essere rivista.
+- Gli account Google non possono accedere in modo automatico: Cognito accetta solo gli indirizzi di reindirizzamento registrati
+  per il portale web, quindi il refresh token va copiato a mano dal browser e rinnovato quando scade.
 
-## Companion projects
+## Progetti collegati
 
-Independent projects built on top of this integration, maintained by other people:
+Progetti indipendenti costruiti su questa integrazione, mantenuti da altre persone:
 
-- **[DAZE Dashboard](https://github.com/fabiovit/daze-dashboard)** by [@fabiovit](https://github.com/fabiovit) -
-  a Home Assistant sidebar panel for Daze wallboxes (live charging view, diagnostics, session statistics).
+- **[DAZE Dashboard](https://github.com/fabiovit/daze-dashboard)** di [@fabiovit](https://github.com/fabiovit) -
+  un pannello laterale per Home Assistant dedicato alle wallbox Daze (vista della ricarica in tempo reale, diagnostica, statistiche delle sessioni).
 
-> These are not maintained by, affiliated with, or supported by this project - please report issues with them
-in their own repositories.
+> Questi progetti non sono mantenuti da questo progetto, né affiliati o supportati da esso: segnala i problemi
+nei loro repository.
 
-## Development
+## Sviluppo
 
-### Setup
+### Preparazione
 
-Requires Python 3.14+ and [`uv`](https://docs.astral.sh/uv/).
+Richiede Python 3.14+ e [`uv`](https://docs.astral.sh/uv/).
 
 ```bash
 uv sync
 ```
 
-This installs the dev/test tooling declared in `pyproject.toml`'s `dev` dependency group
-(Home Assistant core, pytest, and the libraries used by `scripts/auth_spike.py`). The
-integration itself has no runtime dependencies beyond what Home Assistant already
-provides - see `custom_components/daze/manifest.json`.
+Questo installa gli strumenti di sviluppo e test dichiarati nel gruppo di dipendenze `dev` di `pyproject.toml`
+(Home Assistant core, pytest e le librerie usate da `scripts/auth_spike.py`). L'integrazione
+in sé non ha dipendenze a runtime oltre a quelle già fornite da Home Assistant: vedi
+`custom_components/daze/manifest.json`.
 
-### Running the tests
+### Eseguire i test
 
 ```bash
 uv run python -m pytest tests/ -q
 ```
 
-Use `python -m pytest`, not bare `uv run pytest` - the latter doesn't add the repo
-root to `sys.path`, so the `custom_components` package won't be importable.
+Usa `python -m pytest`, non il semplice `uv run pytest`: quest'ultimo non aggiunge la radice del
+repository a `sys.path`, quindi il pacchetto `custom_components` non risulterebbe importabile.
 
-Tests run against fixture payloads captured from real HAR sessions
-(`tests/fixtures/*.json`) plus Home Assistant's own test harness
-(`pytest-homeassistant-custom-component`) - no live Daze account or network access is
-needed to run them.
+I test usano payload di esempio catturati da vere sessioni HAR
+(`tests/fixtures/*.json`) più il banco di prova di Home Assistant
+(`pytest-homeassistant-custom-component`): non servono né un account Daze reale né accesso alla rete.
 
-### Testing against a real Home Assistant instance
+### Provare su un'istanza reale di Home Assistant
 
-Symlink the integration into your HA config and restart HA:
+Crea un link simbolico dell'integrazione nella configurazione di HA e riavvia HA:
 
 ```bash
 ln -s "$(pwd)/custom_components/daze" /path/to/homeassistant/config/custom_components/daze
 ```
 
-Then add it from Settings → Devices & Services as usual.
+Poi aggiungila da Impostazioni → Dispositivi e servizi come di consueto.
 
 ### `scripts/auth_spike.py`
 
-A standalone script (not part of the shipped integration) used to verify which Cognito
-auth flow the backend accepts, without going through Home Assistant. Useful if Daze
-ever changes their auth setup and `custom_components/daze/auth.py` needs revisiting:
+Uno script autonomo (non incluso nell'integrazione distribuita) usato per verificare quale flusso di
+autenticazione Cognito accetta il backend, senza passare da Home Assistant. Utile se Daze
+cambiasse la propria configurazione di accesso e fosse necessario rivedere `custom_components/daze/auth.py`:
 
 ```bash
 DAZE_EMAIL="you@example.com" DAZE_PASSWORD="..." uv run python scripts/auth_spike.py
 ```
 
-## Contributing
+## Contributi
 
-Issues and PRs for this fork are welcome at [github.com/depgiuseppe/ha-daze](https://github.com/depgiuseppe/ha-daze/issues).
-For anything that is not specific to Google sign-in, consider also reporting it to the original project at
+Issue e PR per questo fork sono benvenute su [github.com/depgiuseppe/ha-daze](https://github.com/depgiuseppe/ha-daze/issues).
+Per tutto ciò che non riguarda l'accesso con Google, valuta di segnalarlo anche al progetto originale su
 [github.com/rdndnl/ha-daze](https://github.com/rdndnl/ha-daze/issues).
 
 
-## Acknowledgements
+## Ringraziamenti
 
-This project is a fork of [rdndnl/ha-daze](https://github.com/rdndnl/ha-daze); all the reverse-engineering
-and the integration itself are the work of its author and contributors.
+Questo progetto è un fork di [rdndnl/ha-daze](https://github.com/rdndnl/ha-daze): tutto il lavoro di reverse engineering
+e l'integrazione stessa sono opera del suo autore e dei suoi collaboratori.
 
-Thanks to [MasterJKapp](https://github.com/jkuran) for the contribution in
-charging control (start/stop/resume) + session sensors [PR #15](https://github.com/rdndnl/ha-daze/pull/15).
+Grazie a [MasterJKapp](https://github.com/jkuran) per il contributo sul
+controllo della ricarica (avvio/arresto/ripresa) e sui sensori di sessione, [PR #15](https://github.com/rdndnl/ha-daze/pull/15).
 
-## License
+## Licenza
 
-[MIT](LICENSE), same as the original project.
+[MIT](LICENSE), come il progetto originale.
