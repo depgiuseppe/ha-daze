@@ -1,4 +1,4 @@
-Integrazione personalizzata per Home Assistant per i prodotti di ricarica Daze (Dazebox) e accesso co Google Auth
+Integrazione personalizzata per Home Assistant per i prodotti di ricarica Daze (Dazebox) e accesso con Google Auth
 =======================================================================================
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
