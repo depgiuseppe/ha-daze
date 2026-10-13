@@ -125,6 +125,31 @@ class DazeSocket:
             last_attributes_updated_on=raw.get("lastAttributesUpdatedOn"),
         )
 
+    @property
+    def power_w(self) -> int | None:
+        """Instantaneous power in W, forced to 0 when no current is flowing.
+
+        `lastPower` is the last sample the wallbox pushed to the cloud and the backend
+        does not clear it when a charge ends or the cable is unplugged, while the phase
+        currents are reset to 0. Reporting 4 kW next to 0 A is impossible, so when every
+        phase current we know about is 0 the power is 0 too. If no current is reported
+        at all we cannot tell, and the raw value is passed through.
+        """
+        if self.last_power is None:
+            return None
+        currents = [
+            current
+            for current in (
+                self.last_charging_current_l1,
+                self.last_charging_current_l2,
+                self.last_charging_current_l3,
+            )
+            if current is not None
+        ]
+        if currents and not any(currents):
+            return 0
+        return self.last_power
+
     def apply_remote_info(self, raw: dict) -> None:
         """Merge in GET /v3/sockets/{serial}/remoteInfo data."""
         self.evse_state = raw.get("evseState")
