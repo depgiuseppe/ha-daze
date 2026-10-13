@@ -88,7 +88,7 @@ SOCKET_SENSOR_DESCRIPTIONS: tuple[DazeSocketSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
-        value_fn=lambda s: s.last_power,
+        value_fn=lambda s: s.power_w,
     ),
     DazeSocketSensorEntityDescription(
         key="session_energy",
